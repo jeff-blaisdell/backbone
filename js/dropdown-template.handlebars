@@ -1,0 +1,13 @@
+<fieldset id="{{featureId}}">
+	{{#if displayName}}
+		<label>{{displayName}}:</label>
+	{{/if}} 
+	<select class="jos-with-hint" data-jos-role="FEATURE" data-jos-feature-osr="{{featureOsr}}" data-jos-required="{{required}}">
+		<option>Please select...</option>
+		{{#each options}}
+			<option data-jos-option-osr="{{optionOsr}}" {{#if selected}}selected="true"{{/if}}>
+				{{displayName}} {{#if priceText}}{{priceText}}{{/if}} 
+			</option>
+		{{/each}}
+	</select>
+</fieldset>
