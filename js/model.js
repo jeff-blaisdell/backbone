@@ -1,4 +1,4 @@
-define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, Backbone, Handlebars) {
+define(['jquery', 'backbone', 'handlebars', 'dropdown-template', 'text-group-template'], function ($, Backbone, Handlebars) {
 
     var decorateOptions = function( options, selection ) {
     	var selectedOptionPrice = selection.get('adjustmentPrice');
@@ -112,7 +112,7 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, B
             that.component = undefined;
 
             that.set({
-                    'id': that.get('featureOsr')
+                    'id': that.get('featureId')
                 });
 
         }
@@ -125,9 +125,10 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, B
 	Model.Dropdown = Backbone.Model.extend({
         initialize: function () {
 
-        	var that = this,           // public api
-        	    selection = that.get('selection'); // private instance variables
-
+        	var that           = this,                       // public api
+        	    selection      = that.get('selection'),      // private instance variables
+                optionFeatures = that.get('optionFeatures');
+                 
         	var render = function() {
         		decorateOptions(that.options, selection);
         		var html = Handlebars.templates['dropdown-template']({
@@ -135,7 +136,8 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, B
                     'featureOsr':  that.get('featureOsr'), 
                     'displayName': that.get('displayName'), 
                     'required':    ( that.get('required') === true ? 'true' : 'false' ),
-                    'options':     that.options.toJSON()
+                    'options':     that.options.toJSON(),
+                    'child': ( that.has('child') ? that.get('child').get('html') : undefined)
         		});
         		return html;
         	};
@@ -154,6 +156,8 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, B
 						'adjustmentPrice': option.get('adjustmentPrice')
 					});
 
+
+
 					that.set({
 						'html': render()
 				    });
@@ -164,6 +168,12 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, B
         	};
 
         	that.options = that.get('options');
+
+            that.setChild = function( component ) {
+                that.set({ 'child': component });
+                that.set({ 'html':  render() });
+                return that.get('child');
+            };
 
             that.set({
             	'selector': ( '#' + that.get('featureId')),
@@ -183,7 +193,44 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template'], function ($, B
         }
 	});
 
+    Model.TextGroup = Backbone.Model.extend({
+        initialize: function () {
 
+            var that = this,           // public api
+                selection = that.get('selection'); // private instance variables
+
+            var render = function() {
+                var html = Handlebars.templates['text-group-template']({
+                    'featureId':   that.get('featureId'),
+                    'featureOsr':  that.get('featureOsr'), 
+                    'inputs':      that.inputs
+                });
+                return html;
+            };
+
+            var onchange = function() {
+
+            };
+
+            that.inputs = that.get('inputs');
+
+            that.set({
+                'selector': ( '#' + that.get('featureId')),
+                'html': render()
+            })
+
+            /**
+             * Event Listeners
+             */
+            that.on('ready', function() {
+                  var $dropdown = $(that.get('selector'));
+                  $dropdown.find('select[data-jos-role="FEATURE"]').off('change', onchange)
+                                                                    .on('change', onchange);
+            });
+
+
+        }
+    });
 
 
 	return Model;

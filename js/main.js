@@ -2,15 +2,15 @@ require(['jquery', 'backbone', 'component-factory', 'model', 'data'], function($
 
 	var builder = {};
 
-	builder.launch = function() {
+	builder.launchRing = function() {
 
-		var product = new Model.Product(Data.product),
+		var product    = new Model.Product(Data.ring),
 		    selections = product.configurations,
-		    feature = product.features.get('METAL CHOICE'),
-		    selection = selections.get('METAL CHOICE');
+		    feature    = product.features.get('METAL CHOICE'),
+		    selection      = selections.get(feature.get('featureId'));
 
-	    selection.on('change:optionOsr', function() {
-	    	console.log('Your selection has changed to : "' + selection.get('optionDisplayName') + '".');
+	    selections.on('change:optionOsr', function( selection ) {
+	    	console.log('Your selection has changed to : "' + selection.get('optionDisplayName') + '" from "' + selection.previous('optionDisplayName') + '".');
 	    });
 
 		componentFactory.render( feature, selections )
@@ -22,9 +22,33 @@ require(['jquery', 'backbone', 'component-factory', 'model', 'data'], function($
 
 	};
 
+	builder.launchPendant = function() {
+
+		var product        = new Model.Product(Data.pendant),
+		    features       = product.features,
+		    selections     = product.configurations,
+		    optionFeatures = product.optionFeatures,
+		    feature        = product.features.get('PENDANT ENGRAVING'),
+		    selection      = selections.get(feature.get('featureId'));
+
+
+
+	    selections.on('change:optionOsr', function( selection ) {
+	    	console.log('Your selection has changed to : "' + selection.get('optionDisplayName') + '" from "' + selection.previous('optionDisplayName') + '".');
+	    });
+
+		componentFactory.render( feature, selections, optionFeatures )
+	    	.then(function( selection ) {
+	    		var component = selection.component;
+	    		$('body').append(component.get('html'));
+	    		component.trigger('ready', selection);
+	    	});
+
+	};	
+
 
 	$( document ).ready(function() {
-		builder.launch();
+		builder.launchPendant();
 	});
 
 });

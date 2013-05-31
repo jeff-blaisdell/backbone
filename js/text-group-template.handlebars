@@ -1,0 +1,10 @@
+<span id="{{featureId}}" data-jos-role="SUB_FEATURE_GROUP" data-jos-feature-osr="{{{featureOsr}}}">
+	{{#each inputs}}
+        <fieldset>
+            {{#if displayName}}
+                <label>{{displayName}}:</label>
+            {{/if}}
+            <input type="text" class="jos-with-hint jos-text-input" data-jos-role="SUB_FEATURE" data-jos-feature-id="{{{featureId}}}" data-jos-option-id="{{{optionId}}}" data-jos-option-display-name="{{{displayName}}}" data-jos-required="{{required}}" {{#if allowedChars}}data-jos-allowed-chars="{{{allowedChars}}}"{{/if}} {{#if maxLength}}data-jos-max-length="{{{maxLength}}}"{{/if}} value="{{value}}" />                        
+        </fieldset>
+	{{/each}}
+</span>

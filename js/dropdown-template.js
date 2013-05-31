@@ -50,6 +50,17 @@ function program6(depth0,data) {
   return escapeExpression(stack1);
   }
 
+function program8(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\r\n		";
+  if (stack1 = helpers.child) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.child; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\r\n	";
+  return buffer;
+  }
+
   buffer += "<fieldset id=\"";
   if (stack1 = helpers.featureId) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.featureId; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
@@ -68,7 +79,10 @@ function program6(depth0,data) {
     + "\">\r\n		<option>Please select...</option>\r\n		";
   stack1 = helpers.each.call(depth0, depth0.options, {hash:{},inverse:self.noop,fn:self.program(3, program3, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\r\n	</select>\r\n</fieldset>";
+  buffer += "\r\n	</select>\r\n	";
+  stack1 = helpers['if'].call(depth0, depth0.child, {hash:{},inverse:self.noop,fn:self.program(8, program8, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\r\n</fieldset>";
   return buffer;
   });
 });
