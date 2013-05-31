@@ -6,7 +6,7 @@ define(['jquery', 'model'], function( $, Model ) {
         * Define available components.
         */
        component[ 'STD_DROP' ] = {
-           'render': function( feature, selections ) {
+           'render': function( feature, selections, optionFeatures ) {
 
         	   var params    = {},
        	         deferred  = $.Deferred(),

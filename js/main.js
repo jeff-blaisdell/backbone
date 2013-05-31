@@ -11,6 +11,18 @@ require(['jquery', 'backbone', 'component-factory', 'model', 'data'], function($
     var events         = {}; // Namespace for all event handlers.
     events.helper      = {}; // Sub-namespace for event helper functions.
 
+
+    builder.init = function() {
+		// product        = new Model.Product(Data.pendant),
+		product        = new Model.Product(Data.ring),
+		features       = product.features,
+		selections     = product.configurations,
+		optionFeatures = product.optionFeatures,
+		feature        = product.features.get('METAL CHOICE'),
+		// feature        = product.features.get('PENDANT ENGRAVING'),
+		selection      = selections.get(feature.get('featureId'));
+    };
+
     builder.launch = function() {
         
         builder.init();
@@ -23,15 +35,6 @@ require(['jquery', 'backbone', 'component-factory', 'model', 'data'], function($
 	    		component.trigger('ready', selection);
 	    	});
 
-    };
-
-    builder.init = function() {
-		product        = new Model.Product(Data.pendant),
-		features       = product.features,
-		selections     = product.configurations,
-		optionFeatures = product.optionFeatures,
-		feature        = product.features.get('PENDANT ENGRAVING'),
-		selection      = selections.get(feature.get('featureId'));
     };
     
     builder.renderSeletion = function( selection ) {
