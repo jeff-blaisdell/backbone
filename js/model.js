@@ -1,40 +1,9 @@
 define(['jquery', 
         'backbone', 
-        'handlebars', 
+        'handlebars',
         'dropdown-template', 
         'text-group-template'], 
 function ($, Backbone, Handlebars) {
-
-    var decorateOptions = function( options, selection ) {
-    	var selectedOptionPrice = selection.get('adjustmentPrice');
-        options.each(function( option ) { 
-    		var priceText = undefined;
-    		var price = new Number(0);
-    		var optionPrice = option.get('adjustmentPrice');
-			if ( optionPrice ) {
-                    price = (new Number(optionPrice) * 100) - (new Number(selectedOptionPrice) * 100); 
-            }
-            price = (price / 100).toFixed(2);
-
-            if ('0.00' === price) {
-               priceText = undefined;
-            } else if (price < 0) {
-               priceText = '[-$' + (new String(price)).replace(/-/, '') + ']';
-            } else {
-               priceText = '[+$' + price + ']';
-            }
-            option.set({ 
-            	'priceText': priceText,
-            	'selected': false 
-            });            
-        });
-
-        var option = options.findWhere({ 'optionOsr': selection.get('optionOsr') });
-        if ( option ) {
-        	option.set({ 'selected': true });
-        }
-
-    };
 
 	var Model = {};
 
@@ -42,12 +11,59 @@ function ($, Backbone, Handlebars) {
 		initialize: function() {
 			var that = this;
 
+
+            var buildOptionFeatures = function( selection ) {
+
+                var feature               = that.features.get(selection.get('featureOsr')),
+                    optionFeatures        = that.optionFeatures,
+                    option                = undefined,
+                    optionFeature         = undefined,
+                    prevSubConfigurations = selection.subConfigurations,
+                    subConfigurations     = undefined;
+
+                // Reset sub-configurations
+                selection.subConfigurations = undefined;
+
+                if ( selection.has('optionId') && optionFeatures ) {
+                    option = feature.options.get(selection.get('optionId'));
+                    if ( option && option.has('optionFeatureRefId') ) {
+                        optionFeature = optionFeatures.get(option.get('optionFeatureRefId'));
+                    }
+
+                    if ( optionFeature ) {
+                        subConfigurations = new Model.Configurations();
+                        optionFeature.optionFeatureItems.each(function( item ) {
+                            subConfigurations.add([{
+                                'featureId': item.featureId,
+                                'featureOsr': item.featureOsr,
+                                'parentFeatureOsr': feature.get('featureOsr'), 
+                                'optionId': item.optionId, 
+                                'optionDisplayName': item.displayName, 
+                                'optionValue': item.value
+                            }]);
+                        });
+                        selection.subConfigurations = subConfigurations;
+                    }
+                }
+
+                if ( prevSubConfigurations !== subConfigurations ) {
+                    selection.trigger('change:subConfigurations', selection);
+                }
+
+            };
+
+            var bomb = function( selection ) {
+                console.log('cha');
+            };
+
 			that.features = new Model.Features(that.get('features'));
 			that.configurations = new Model.Configurations(that.get('configurations'));
 			that.optionFeatures = new Model.OptionFeatures(that.get('optionFeatures'));
 			that.set({
 				'id': that.get('productId')
 			});				
+
+            that.listenTo(that.configurations, 'change:optionOsr', buildOptionFeatures) 
 		}
 	});
 
@@ -117,8 +133,8 @@ function ($, Backbone, Handlebars) {
             that.component = undefined;
 
             that.set({
-                    'id': that.get('featureId')
-                });
+                'id': that.get('featureId')
+            });
 
         }
 	});
@@ -130,69 +146,70 @@ function ($, Backbone, Handlebars) {
 	Model.Dropdown = Backbone.Model.extend({
         initialize: function () {
 
-        	var that           = this,                       // public api
-        	    selection      = that.get('selection');      // private instance variables
-                 
-        	var render = function() {
-        		decorateOptions(that.options, selection);
-        		var html = Handlebars.templates['dropdown-template']({
-                    'featureId':   that.get('featureId'),
-                    'featureOsr':  that.get('featureOsr'), 
-                    'displayName': that.get('displayName'), 
-                    'required':    ( that.get('required') === true ? 'true' : 'false' ),
-                    'options':     that.options.toJSON(),
-                    'child': ( that.has('child') ? that.get('child').get('html') : undefined)
-        		});
-        		return html;
-        	};
+        	var that           = this,                  // public api
+                product        = that.get('product'),   // private instance variables
+                feature        = that.get('feature'),
+                selection      = product.configurations.get(feature.get('featureId'));
 
-        	var onchange = function() {
-        		var $fieldset = $(that.get('selector')),
-        		    $dropdown = $(that.get('selector') + ' select[data-jos-role="FEATURE"]'),
-        		    $option   = $dropdown.find(':selected'),
-        		    optionOsr = ($option ? $option.attr('data-jos-option-osr') : undefined),
-        		    option    = that.options.findWhere({ 'optionOsr': optionOsr });
-
-                    selection.set({
-					    'optionOsr': option.get('optionOsr'),
-						'optionId': option.get('optionId'),
-						'optionDisplayName': option.get('displayName'),
-						'adjustmentPrice': option.get('adjustmentPrice')
-					});
-
-
-
-					that.set({
-						'html': render()
-				    });
-
-                    $fieldset.replaceWith(that.get('html'));
-
-                    that.trigger('ready');
-        	};
-
-        	that.options = that.get('options');
-
-            that.setChild = function( component ) {
-                that.set({ 'child': component });
-                that.set({ 'html':  render() });
-                return that.get('child');
-            };
-
+        	that.options = feature.options;
             that.set({
-            	'selector': ( '#' + that.get('featureId')),
-            	'html': render()
-            })
-
-            /**
-             * Event Listeners
-             */
-            that.on('ready', function() {
-                  var $dropdown = $(that.get('selector'));
-                  $dropdown.find('select[data-jos-role="FEATURE"]').off('change', onchange)
-                                                                    .on('change', onchange);
+                'featureId':   feature.get('featureId'),
+                'featureOsr':  feature.get('featureOsr'),
+                'displayName': feature.get('displayName'),
+                'required':    feature.get('required'),
+                'value':       selection.get('optionOsr')
             });
 
+            var updateOptionPriceText = function( options, selection ) {
+                var selectedOptionPrice = selection.get('adjustmentPrice');
+                options.each(function( option ) { 
+                    var priceText = undefined;
+                    var price = new Number(0);
+                    var optionPrice = option.get('adjustmentPrice');
+                    if ( optionPrice ) {
+                        price = (new Number(optionPrice) * 100) - (new Number(selectedOptionPrice) * 100); 
+                    }
+                    price = (price / 100).toFixed(2);
+
+                    if ('0.00' === price) {
+                       priceText = undefined;
+                    } else if (price < 0) {
+                       priceText = '[-$' + (new String(price)).replace(/-/, '') + ']';
+                    } else {
+                       priceText = '[+$' + price + ']';
+                    }
+                    option.set({ 
+                        'priceText': priceText,
+                        'selected': false 
+                    });            
+                });
+
+                var option = options.findWhere({ 'optionOsr': selection.get('optionOsr') });
+                if ( option ) {
+                    option.set({ 'selected': true });
+                }
+
+            };
+
+            that.on('change:value', function() {
+                var option     = that.options.findWhere({ 'optionOsr': that.get('value') }),
+                    prevOption = that.options.findWhere({ 'optionOsr': that.previous('value') });
+
+                selection.set({
+                    'optionOsr': option.get('optionOsr'),
+                    'optionId': option.get('optionId'),
+                    'optionDisplayName': option.get('displayName'),
+                    'adjustmentPrice': option.get('adjustmentPrice')
+                });
+
+                if ( option.get('adjustmentPrice') !== prevOption.get('adjustmentPrice') ) {
+                    updateOptionPriceText(that.options, selection);
+                    that.trigger('render', that);
+                }
+
+            });
+
+            updateOptionPriceText(that.options, selection);
 
         }
 	});

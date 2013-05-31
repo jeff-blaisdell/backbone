@@ -61,11 +61,7 @@ function program8(depth0,data) {
   return buffer;
   }
 
-  buffer += "<fieldset id=\"";
-  if (stack1 = helpers.featureId) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
-  else { stack1 = depth0.featureId; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
-  buffer += escapeExpression(stack1)
-    + "\">\r\n	";
+  buffer += "\r\n	";
   stack1 = helpers['if'].call(depth0, depth0.displayName, {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
   buffer += " \r\n	<select class=\"jos-with-hint\" data-jos-role=\"FEATURE\" data-jos-feature-osr=\"";
@@ -82,7 +78,7 @@ function program8(depth0,data) {
   buffer += "\r\n	</select>\r\n	";
   stack1 = helpers['if'].call(depth0, depth0.child, {hash:{},inverse:self.noop,fn:self.program(8, program8, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\r\n</fieldset>";
+  buffer += "\r\n";
   return buffer;
   });
 });
