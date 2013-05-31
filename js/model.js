@@ -143,25 +143,12 @@ function ($, Backbone, Handlebars) {
         model: Model.Configuration
 	});
 
-	Model.Dropdown = Backbone.Model.extend({
-        initialize: function () {
-
-        	var that           = this,                  // public api
-                product        = that.get('product'),   // private instance variables
-                feature        = that.get('feature'),
-                selection      = product.configurations.get(feature.get('featureId'));
-
-        	that.options = feature.options;
-            that.set({
-                'featureId':   feature.get('featureId'),
-                'featureOsr':  feature.get('featureOsr'),
-                'displayName': feature.get('displayName'),
-                'required':    feature.get('required'),
-                'value':       selection.get('optionOsr')
-            });
-
-            var updateOptionPriceText = function( options, selection ) {
+    Model.UiComponent = Backbone.Model.extend({
+           updateOptionPriceText : function( options, selection ) {
                 var selectedOptionPrice = selection.get('adjustmentPrice');
+                if ( !selectedOptionPrice ) {
+                    selectedOptionPrice = new Number(0);
+                }
                 options.each(function( option ) { 
                     var priceText = undefined;
                     var price = new Number(0);
@@ -189,29 +176,49 @@ function ($, Backbone, Handlebars) {
                     option.set({ 'selected': true });
                 }
 
-            };
+            }
+    });
 
-            that.on('change:value', function() {
-                var option     = that.options.findWhere({ 'optionOsr': that.get('value') }),
-                    prevOption = that.options.findWhere({ 'optionOsr': that.previous('value') });
 
-                selection.set({
-                    'optionOsr': option.get('optionOsr'),
-                    'optionId': option.get('optionId'),
-                    'optionDisplayName': option.get('displayName'),
-                    'adjustmentPrice': option.get('adjustmentPrice')
-                });
+	Model.Dropdown = Model.UiComponent.extend({
+        initialize: function () {
 
-                if ( option.get('adjustmentPrice') !== prevOption.get('adjustmentPrice') ) {
-                    updateOptionPriceText(that.options, selection);
-                    that.trigger('render', that);
-                }
+        	var that           = this,                  // public api
+                product        = that.get('product'),   // private instance variables
+                feature        = that.get('feature'),
+                selection      = product.configurations.get(feature.get('featureId'));
 
+        	that.options = feature.options;
+            that.set({
+                'featureId':   feature.get('featureId'),
+                'featureOsr':  feature.get('featureOsr'),
+                'displayName': feature.get('displayName'),
+                'required':    feature.get('required'),
+                'value':       selection.get('optionOsr')
             });
 
-            updateOptionPriceText(that.options, selection);
+            that.setValue = function( value ) {
+                var option     = that.options.findWhere({ 'optionOsr': value }),
+                    prevOption = that.options.findWhere({ 'optionOsr': that.get('value') });
+
+                selection.set({
+                    'optionOsr':         ( option ? option.get('optionOsr')       : undefined ),
+                    'optionId':          ( option ? option.get('optionId')        : undefined ),
+                    'optionDisplayName': ( option ? option.get('displayName')     : undefined ),
+                    'adjustmentPrice':   ( option ? option.get('adjustmentPrice') : undefined )
+                });
+
+                if ( ( option ? option.get('adjustmentPrice') : undefined ) !== ( prevOption ? prevOption.get('adjustmentPrice')  : undefined ) ) {
+                    Model.UiComponent.prototype.updateOptionPriceText(that.options, selection);
+                    that.trigger('change', that);
+                }
+                that.set({'value': value}, {'silent': true});
+            };
+
+            Model.UiComponent.prototype.updateOptionPriceText(that.options, selection);
 
         }
+
 	});
 
     Model.TextGroup = Backbone.Model.extend({

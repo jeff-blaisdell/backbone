@@ -15,7 +15,7 @@ var View = {};
 		},
 
 		initialize: function() {
-            this.listenTo(this.model, 'render', this.render);
+            this.listenTo(this.model, 'change', this.render);
             this.render();
 		},
 
@@ -33,7 +33,7 @@ var View = {};
 
 		onchange: function() {
 			var value = this.$el.find('select[data-jos-role="FEATURE"] :selected').attr('data-jos-option-osr');
-            this.model.set({ 'value': value });
+            this.model.setValue(value);
 		}
 
 	});
