@@ -27,17 +27,19 @@ define(['jquery', 'model'], function( $, Model ) {
        };
 
        component[ 'TEXT_GROUP' ] = {
-           'render': function( feature, selections, optionFeature ) {
+           'render': function( feature, selections, optionFeatures, optionFeature ) {
 
              var params    = {},
                  deferred  = $.Deferred(),
                  selection = selections.get(feature.get('featureId')),
                  c         = undefined;
                
-               params.selection  = selection;
-               params.featureId  = feature.get('featureId');
-               params.featureOsr = feature.get('featureOsr');
-               params.inputs     = [];
+               params.feature        = feature;
+               params.selections     = selections;
+               params.optionFeatures = optionFeatures;
+               params.featureId      = feature.get('featureId');
+               params.featureOsr     = feature.get('featureOsr');
+               params.inputs         = [];
                
                optionFeature.optionFeatureItems.each(function( optionFeatureItem ) {
                    var input         = {};
@@ -120,7 +122,7 @@ define(['jquery', 'model'], function( $, Model ) {
 
                      if ( optionFeature ) {
                          type = component[ optionFeature.get('displayType') ];
-                         type.render( feature, selections, optionFeature )
+                         type.render( feature, selections, optionFeatures, optionFeature )
                              .then( function( selection ) {
                                  deferred.resolve(selection);
                              });

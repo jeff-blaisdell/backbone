@@ -1,4 +1,9 @@
-define(['jquery', 'backbone', 'handlebars', 'dropdown-template', 'text-group-template'], function ($, Backbone, Handlebars) {
+define(['jquery', 
+        'backbone', 
+        'handlebars', 
+        'dropdown-template', 
+        'text-group-template'], 
+function ($, Backbone, Handlebars) {
 
     var decorateOptions = function( options, selection ) {
     	var selectedOptionPrice = selection.get('adjustmentPrice');
@@ -126,8 +131,7 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template', 'text-group-tem
         initialize: function () {
 
         	var that           = this,                       // public api
-        	    selection      = that.get('selection'),      // private instance variables
-                optionFeatures = that.get('optionFeatures');
+        	    selection      = that.get('selection');      // private instance variables
                  
         	var render = function() {
         		decorateOptions(that.options, selection);
@@ -196,8 +200,11 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template', 'text-group-tem
     Model.TextGroup = Backbone.Model.extend({
         initialize: function () {
 
-            var that = this,           // public api
-                selection = that.get('selection'); // private instance variables
+            var that           = this,                     // public api
+                feature        = that.get('feature'),      // private instance variables
+                selection      = that.get('selections').get(feature.get('featureId')),
+                selections     = that.get('selections'), 
+                optionFeatures = that.get('optionFeatures');
 
             var render = function() {
                 var html = Handlebars.templates['text-group-template']({
@@ -222,12 +229,9 @@ define(['jquery', 'backbone', 'handlebars', 'dropdown-template', 'text-group-tem
             /**
              * Event Listeners
              */
-            that.on('ready', function() {
-                  var $dropdown = $(that.get('selector'));
-                  $dropdown.find('select[data-jos-role="FEATURE"]').off('change', onchange)
-                                                                    .on('change', onchange);
-            });
+            selection.component.on('ready', function() {
 
+            })
 
         }
     });
